@@ -78,15 +78,18 @@ function App() {
         remainingPlayers,
     ]);
 
-    const handleAddUser = useCallback<
-        React.MouseEventHandler<HTMLButtonElement>
-    >(() => {
-        if (playerNameInput.trim() === "") {
-            alert("Player name cannot be empty.");
+    const handleAddUser = useCallback(() => {
+        const newPlayers = playerNameInput
+            .split(",")
+            .map((name) => name.trim())
+            .filter((name) => name !== "");
+
+        if (newPlayers.length === 0) {
+            alert("Please enter at least one valid player name.");
             return;
         }
 
-        setPlayers((prev) => [...prev, playerNameInput.trim()]);
+        setPlayers((prev) => [...prev, ...newPlayers]);
         setPlayerNameInput("");
     }, [playerNameInput]);
 
@@ -98,124 +101,209 @@ function App() {
     return (
         <div
             style={{
-                fontFamily: "Arial, sans-serif",
-                padding: "20px",
-                textAlign: "center",
-                backgroundColor: "#f4f4f4",
+                fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+                maxWidth: "800px",
+                margin: "0 auto",
+                padding: "2rem",
                 minHeight: "100vh",
+                backgroundColor: "#fafafa",
             }}
         >
-            <input
-                value={playerNameInput}
-                type="text"
-                placeholder="Add player"
-                onChange={handlePlayerInputChange}
-                style={{
-                    padding: "10px",
-                    marginRight: "10px",
-                    borderRadius: "5px",
-                    border: "1px solid #ccc",
-                }}
-            />
-            <button
-                onClick={handleAddUser}
-                style={{
-                    padding: "10px 15px",
-                    borderRadius: "5px",
-                    background: "#007BFF",
-                    color: "white",
-                    border: "none",
-                    cursor: "pointer",
-                }}
-            >
-                Add Player
-            </button>
-
-            <h2>Players:</h2>
-            {players.map((player) => (
-                <div
-                    key={player}
+            <div style={{ display: "flex", gap: "1rem", marginBottom: "2rem" }}>
+                <input
+                    value={playerNameInput}
+                    type="text"
+                    placeholder="Add players (comma-separated)"
+                    onChange={handlePlayerInputChange}
                     style={{
-                        textDecoration: completedPlayers.includes(player)
-                            ? "line-through"
-                            : "none",
-                        marginBottom: "5px",
+                        flex: 1,
+                        padding: "0.75rem 1rem",
+                        borderRadius: "8px",
+                        border: "1px solid #e0e0e0",
+                        fontSize: "1rem",
+                        outline: "none",
+                        boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+                        transition: "all 0.2s",
+                    }}
+                />
+                <button
+                    onClick={handleAddUser}
+                    style={{
+                        padding: "0.75rem 1.5rem",
+                        borderRadius: "8px",
+                        background: "#6366f1",
+                        color: "white",
+                        border: "none",
+                        cursor: "pointer",
+                        fontSize: "0.875rem",
+                        fontWeight: "500",
+                        transition: "all 0.2s",
+                        boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
                     }}
                 >
-                    {player}
+                    Add Players
+                </button>
+            </div>
+
+            {players.length > 0 && (
+                <div style={{ marginBottom: "2rem" }}>
+                    <h2
+                        style={{
+                            fontSize: "1.125rem",
+                            fontWeight: "500",
+                            color: "#374151",
+                            marginBottom: "1rem",
+                        }}
+                    >
+                        Players ({remainingPlayers.length} remaining)
+                    </h2>
+                    <div
+                        style={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: "0.5rem",
+                        }}
+                    >
+                        {players.map((player) => (
+                            <div
+                                key={player}
+                                style={{
+                                    padding: "0.375rem 0.75rem",
+                                    borderRadius: "20px",
+                                    background: completedPlayers.includes(
+                                        player
+                                    )
+                                        ? "#d1d5db"
+                                        : "#e0e7ff",
+                                    color: completedPlayers.includes(player)
+                                        ? "#6b7280"
+                                        : "#3730a3",
+                                    fontSize: "0.875rem",
+                                    fontWeight: "500",
+                                    transition: "all 0.2s",
+                                    textDecoration: completedPlayers.includes(
+                                        player
+                                    )
+                                        ? "line-through"
+                                        : "none",
+                                    opacity: completedPlayers.includes(player)
+                                        ? 0.75
+                                        : 1,
+                                }}
+                            >
+                                {player}
+                            </div>
+                        ))}
+                    </div>
                 </div>
-            ))}
+            )}
 
             <button
                 onClick={handleStartSpin}
                 disabled={players.length === 0}
                 style={{
-                    marginTop: "20px",
-                    padding: "10px 15px",
-                    borderRadius: "5px",
-                    background: players.length > 0 ? "#28A745" : "#ccc",
+                    width: "100%",
+                    padding: "1rem",
+                    borderRadius: "12px",
+                    background: players.length > 0 ? "#6366f1" : "#d1d5db",
                     color: "white",
                     border: "none",
-                    cursor: players.length > 0 ? "pointer" : "default",
+                    cursor: players.length > 0 ? "pointer" : "not-allowed",
+                    fontSize: "1rem",
+                    fontWeight: "600",
+                    transition: "all 0.2s",
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+                    marginBottom: "2rem",
                 }}
             >
-                {players.length > 0 ? "Spin" : "Add players to start"}
+                {players.length > 0 ? "Spin the Wheel" : "Add players to start"}
             </button>
 
             {selectedPlayer && (
                 <div
                     style={{
-                        marginTop: "20px",
-                        padding: "20px",
-                        background: "#fff",
-                        borderRadius: "10px",
-                        boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-                        maxWidth: "400px",
-                        margin: "20px auto",
+                        padding: "2rem",
+                        background: "white",
+                        borderRadius: "16px",
+                        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                        border: "1px solid #f3f4f6",
                     }}
                 >
-                    <h2>Selected Player: {selectedPlayer}</h2>
-                    <div
-                        style={{
-                            position: "relative",
-                            height: "50px",
-                            marginTop: "10px",
-                        }}
-                    >
-                        {showQuestion ? (
-                            <h3>{selectedQuestion}</h3>
-                        ) : (
-                            <div
+                    <div style={{ marginBottom: "1.5rem" }}>
+                        <p
+                            style={{
+                                color: "#6b7280",
+                                fontSize: "0.875rem",
+                                marginBottom: "0.5rem",
+                            }}
+                        >
+                            Selected Player
+                        </p>
+                        <h2
+                            style={{
+                                fontSize: "1.5rem",
+                                fontWeight: "600",
+                                color: "#1f2937",
+                            }}
+                        >
+                            {selectedPlayer}
+                        </h2>
+                    </div>
+
+                    <div style={{ marginBottom: "1.5rem" }}>
+                        <p
+                            style={{
+                                color: "#6b7280",
+                                fontSize: "0.875rem",
+                                marginBottom: "0.5rem",
+                            }}
+                        >
+                            Question
+                        </p>
+                        <div
+                            style={{
+                                padding: "1.5rem",
+                                background: showQuestion
+                                    ? "#f8fafc"
+                                    : "#f1f5f9",
+                                borderRadius: "8px",
+                                minHeight: "100px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                transition: "all 0.2s",
+                                filter: showQuestion ? "none" : "blur(8px)",
+                            }}
+                        >
+                            <p
                                 style={{
-                                    height: "50px",
-                                    background: "#ddd",
-                                    borderRadius: "5px",
-                                    filter: "blur(5px)",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
+                                    fontSize: "1.125rem",
+                                    color: showQuestion ? "#1e293b" : "#64748b",
+                                    margin: 0,
+                                    textAlign: "center",
                                 }}
                             >
-                                <h3 style={{ opacity: "0.5" }}>
-                                    Hidden Question
-                                </h3>
-                            </div>
-                        )}
+                                {selectedQuestion}
+                            </p>
+                        </div>
                     </div>
+
                     {!showQuestion && (
                         <button
                             onClick={() => setShowQuestion(true)}
                             style={{
-                                marginTop: "10px",
-                                padding: "8px 12px",
-                                borderRadius: "5px",
-                                background: "#DC3545",
-                                color: "white",
+                                width: "100%",
+                                padding: "0.75rem",
+                                borderRadius: "8px",
+                                background: "#f1f5f9",
+                                color: "#64748b",
                                 border: "none",
                                 cursor: "pointer",
+                                fontWeight: "500",
+                                transition: "all 0.2s",
                             }}
                         >
-                            Show Question
+                            Reveal Question
                         </button>
                     )}
                 </div>

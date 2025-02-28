@@ -1,4 +1,5 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
+import triviaQuestions from "./data";
 
 function App() {
     const [players, setPlayers] = useState<string[]>([]);
@@ -11,19 +12,19 @@ function App() {
     const [remainingPlayers, setRemainingPlayers] = useState<string[]>([]);
     const [completedPlayers, setCompletedPlayers] = useState<string[]>([]);
 
-    const questionsArray = useMemo<string[]>(
-        () => [
-            "What is the capital of France?",
-            "Who wrote 'To Kill a Mockingbird'?",
-            "What is the square root of 64?",
-            "Which planet is known as the Red Planet?",
-            "Who painted the Mona Lisa?",
-        ],
-        []
-    );
+    // const triviaQuestions = useMemo<string[]>(
+    //     () => [
+    //         "What is the capital of France?",
+    //         "Who wrote 'To Kill a Mockingbird'?",
+    //         "What is the square root of 64?",
+    //         "Which planet is known as the Red Planet?",
+    //         "Who painted the Mona Lisa?",
+    //     ],
+    //     []
+    // );
 
     const [remainingQuestions, setRemainingQuestions] = useState<string[]>([
-        ...questionsArray,
+        ...triviaQuestions,
     ]);
 
     useEffect(() => {
@@ -44,20 +45,20 @@ function App() {
 
     const getRandomQuestion = useCallback((): string | null => {
         if (remainingQuestions.length === 0) {
-            setRemainingQuestions([...questionsArray]);
+            setRemainingQuestions([...triviaQuestions]);
         }
         const index = getRandomIndex(remainingQuestions);
         const question = remainingQuestions[index];
         setRemainingQuestions((prev) => prev.filter((_, i) => i !== index));
         return question;
-    }, [questionsArray, remainingQuestions]);
+    }, [remainingQuestions]);
 
     const handleStartSpin = useCallback(() => {
         if (remainingPlayers.length === 0) {
             alert("All players have played! Starting a new round...");
             setRemainingPlayers([...players]);
             setCompletedPlayers([]);
-            setRemainingQuestions([...questionsArray]);
+            setRemainingQuestions([...triviaQuestions]);
             setSelectedPlayer(null);
             setSelectedQuestion(null);
             setShowQuestion(false);
@@ -70,13 +71,7 @@ function App() {
             setSelectedQuestion(question);
             setShowQuestion(false);
         }, 100);
-    }, [
-        getRandomPlayer,
-        getRandomQuestion,
-        players,
-        questionsArray,
-        remainingPlayers,
-    ]);
+    }, [getRandomPlayer, getRandomQuestion, players, remainingPlayers]);
 
     const handleAddUser = useCallback(() => {
         const newPlayers = playerNameInput
@@ -97,6 +92,17 @@ function App() {
         useCallback((e) => {
             setPlayerNameInput(e.target.value);
         }, []);
+
+    const handleInputKeyPress: React.KeyboardEventHandler<HTMLInputElement> =
+        useCallback(
+            (e) => {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddUser();
+                }
+            },
+            [handleAddUser]
+        );
 
     return (
         <div
@@ -125,6 +131,7 @@ function App() {
                         boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
                         transition: "all 0.2s",
                     }}
+                    onKeyDown={handleInputKeyPress}
                 />
                 <button
                     onClick={handleAddUser}

@@ -1,27 +1,21 @@
 import { useState, useCallback, useEffect } from "react";
 import triviaQuestions from "./data";
 
+interface Player {
+    id: number;
+    name: string;
+}
+
 function App() {
-    const [players, setPlayers] = useState<string[]>([]);
+    const [players, setPlayers] = useState<Player[]>([]);
     const [playerNameInput, setPlayerNameInput] = useState<string>("");
-    const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
+    const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
     const [selectedQuestion, setSelectedQuestion] = useState<string | null>(
         null
     );
     const [showQuestion, setShowQuestion] = useState<boolean>(false);
-    const [remainingPlayers, setRemainingPlayers] = useState<string[]>([]);
-    const [completedPlayers, setCompletedPlayers] = useState<string[]>([]);
-
-    // const triviaQuestions = useMemo<string[]>(
-    //     () => [
-    //         "What is the capital of France?",
-    //         "Who wrote 'To Kill a Mockingbird'?",
-    //         "What is the square root of 64?",
-    //         "Which planet is known as the Red Planet?",
-    //         "Who painted the Mona Lisa?",
-    //     ],
-    //     []
-    // );
+    const [remainingPlayers, setRemainingPlayers] = useState<Player[]>([]);
+    const [completedPlayers, setCompletedPlayers] = useState<Player[]>([]);
 
     const [remainingQuestions, setRemainingQuestions] = useState<string[]>([
         ...triviaQuestions,
@@ -31,10 +25,10 @@ function App() {
         setRemainingPlayers([...players]);
     }, [players]);
 
-    const getRandomIndex = (array: string[]): number =>
+    const getRandomIndex = (array: unknown[]): number =>
         Math.floor(Math.random() * array.length);
 
-    const getRandomPlayer = useCallback((): string | null => {
+    const getRandomPlayer = useCallback((): Player | null => {
         if (remainingPlayers.length === 0) return null;
         const index = getRandomIndex(remainingPlayers);
         const player = remainingPlayers[index];
@@ -84,9 +78,31 @@ function App() {
             return;
         }
 
-        setPlayers((prev) => [...prev, ...newPlayers]);
+        // Check for duplicate names
+        const duplicateNames = newPlayers.filter((name) =>
+            players.some(
+                (player) => player.name.toLowerCase() === name.toLowerCase()
+            )
+        );
+
+        if (duplicateNames.length > 0) {
+            alert(
+                `The following names are already taken: ${duplicateNames.join(
+                    ", "
+                )}`
+            );
+            return;
+        }
+
+        // Add new players with unique IDs
+        const newPlayersWithIds = newPlayers.map((name, index) => ({
+            id: players.length + index + 1, // Generate unique ID
+            name,
+        }));
+
+        setPlayers((prev) => [...prev, ...newPlayersWithIds]);
         setPlayerNameInput("");
-    }, [playerNameInput]);
+    }, [playerNameInput, players]);
 
     const handlePlayerInputChange: React.ChangeEventHandler<HTMLInputElement> =
         useCallback((e) => {
@@ -115,12 +131,16 @@ function App() {
                 backgroundColor: "#fafafa",
             }}
         >
+            <h1 style={{ fontFamily: "Moderat, Helvetica, sans-serif" }}>
+                Fun Friday - spartannash team @Cognizant
+            </h1>
             <div style={{ display: "flex", gap: "1rem", marginBottom: "2rem" }}>
                 <input
                     value={playerNameInput}
                     type="text"
                     placeholder="Add players (comma-separated)"
                     onChange={handlePlayerInputChange}
+                    onKeyDown={handleInputKeyPress}
                     style={{
                         flex: 1,
                         padding: "0.75rem 1rem",
@@ -131,7 +151,6 @@ function App() {
                         boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
                         transition: "all 0.2s",
                     }}
-                    onKeyDown={handleInputKeyPress}
                 />
                 <button
                     onClick={handleAddUser}
@@ -173,32 +192,36 @@ function App() {
                     >
                         {players.map((player) => (
                             <div
-                                key={player}
+                                key={player.id}
                                 style={{
                                     padding: "0.375rem 0.75rem",
                                     borderRadius: "20px",
-                                    background: completedPlayers.includes(
-                                        player
+                                    background: completedPlayers.some(
+                                        (p) => p.id === player.id
                                     )
                                         ? "#d1d5db"
                                         : "#e0e7ff",
-                                    color: completedPlayers.includes(player)
+                                    color: completedPlayers.some(
+                                        (p) => p.id === player.id
+                                    )
                                         ? "#6b7280"
                                         : "#3730a3",
                                     fontSize: "0.875rem",
                                     fontWeight: "500",
                                     transition: "all 0.2s",
-                                    textDecoration: completedPlayers.includes(
-                                        player
+                                    textDecoration: completedPlayers.some(
+                                        (p) => p.id === player.id
                                     )
                                         ? "line-through"
                                         : "none",
-                                    opacity: completedPlayers.includes(player)
+                                    opacity: completedPlayers.some(
+                                        (p) => p.id === player.id
+                                    )
                                         ? 0.75
                                         : 1,
                                 }}
                             >
-                                {player}
+                                {player.name}
                             </div>
                         ))}
                     </div>
@@ -253,7 +276,7 @@ function App() {
                                 color: "#1f2937",
                             }}
                         >
-                            {selectedPlayer}
+                            {selectedPlayer.name}
                         </h2>
                     </div>
 
